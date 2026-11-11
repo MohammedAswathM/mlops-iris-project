@@ -1,0 +1,67 @@
+
+name: Iris MLOps CI with CML
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install dvc
+
+      - name: Configure DVC remote
+        env:
+          DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        run: |
+          dvc remote modify --local origin auth basic
+          dvc remote modify --local origin user "$DAGSHUB_USERNAME"
+          dvc remote modify --local origin password "$DAGSHUB_TOKEN"
+
+      - name: Download DVC artifacts
+        run: dvc pull
+
+      - name: Reproduce ML pipeline
+        run: dvc repro
+
+      - name: Set up CML
+        uses: iterative/setup-cml@v2
+
+      - name: Generate and publish report
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "# Iris ML Experiment Report" > report.md
+          echo "## Evaluation Metrics" >> report.md
+          dvc metrics show --md >> report.md
+          echo "" >> report.md
+          echo "## Experiment Parameters" >> report.md
+          dvc params diff HEAD >> report.md
+          echo "" >> report.md
+          echo "## Pipeline Status" >> report.md
+          dvc status >> report.md
+          cml comment create report.md
