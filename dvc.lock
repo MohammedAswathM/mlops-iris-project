@@ -35,16 +35,16 @@ stages:
       size: 763
     params:
       params.yaml:
-        train.max_depth: 4
+        train.max_depth: 6
         train.min_samples_split: 2
         train.model_type: random_forest
-        train.n_estimators: 100
+        train.n_estimators: 200
         train.random_state: 42
     outs:
     - path: models/iris_random_forest.joblib
       hash: md5
-      md5: 1fa3254f1fb3e8584e192a581e85c619
-      size: 150097
+      md5: 36eaa44c0642132ac0eba6155f7c56da
+      size: 334865
   evaluate:
     cmd: python src/evaluate.py
     deps:
@@ -58,8 +58,8 @@ stages:
       size: 98
     - path: models/iris_random_forest.joblib
       hash: md5
-      md5: 1fa3254f1fb3e8584e192a581e85c619
-      size: 150097
+      md5: 36eaa44c0642132ac0eba6155f7c56da
+      size: 334865
     - path: src/evaluate.py
       hash: md5
       md5: cdf6950c19dc61d454248680672a142b
@@ -70,9 +70,9 @@ stages:
     outs:
     - path: reports/confusion_matrix.png
       hash: md5
-      md5: a77b635a156d6b5bc836b398d6a9e75a
-      size: 29449
+      md5: a0dc87dee0c99e7450f3ef54224c0a3e
+      size: 29329
     - path: reports/metrics.json
       hash: md5
-      md5: cd26a661a71f7071c61a8bdc604cd15c
-      size: 163
+      md5: 3c34f2e2a6c73a356306292d4b501e1b
+      size: 133
