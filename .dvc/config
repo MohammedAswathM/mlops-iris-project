@@ -1,0 +1,4 @@
+[core]
+    remote = origin
+['remote "origin"']
+    url = https://dagshub.com/MohammedAswathM/mohammedAswath23BIT058-mlops-iris-project.dvc

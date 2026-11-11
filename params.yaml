@@ -1,0 +1,11 @@
+prepare:
+  test_size: 0.2
+  random_state: 42
+train:
+  model_type: random_forest
+  n_estimators: 100
+  max_depth: 4
+  min_samples_split: 2
+  random_state: 42
+evaluate:
+  average: weighted

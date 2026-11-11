@@ -1,0 +1,39 @@
+stages:
+  prepare:
+    cmd: python src/prepare.py
+    deps:
+      - src/prepare.py
+      - data/raw/iris.csv
+    params:
+      - prepare.test_size
+      - prepare.random_state
+    outs:
+      - data/processed
+  train:
+    cmd: python src/train.py
+    deps:
+      - src/train.py
+      - data/processed
+    params:
+      - train.model_type
+      - train.n_estimators
+      - train.max_depth
+      - train.min_samples_split
+      - train.random_state
+    outs:
+      - models/iris_random_forest.joblib
+  evaluate:
+    cmd: python src/evaluate.py
+    deps:
+      - src/evaluate.py
+      - models/iris_random_forest.joblib
+      - data/processed/X_test.csv
+      - data/processed/y_test.csv
+    params:
+      - evaluate.average
+    metrics:
+      - reports/metrics.json:
+          cache: false
+    plots:
+      - reports/confusion_matrix.png:
+          cache: false

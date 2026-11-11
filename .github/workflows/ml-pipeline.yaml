@@ -1,0 +1,52 @@
+name: Reproducible ML Pipeline
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  reproduce:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Recreate deterministic source dataset
+        run: python src/generate_data.py
+
+      - name: Reproduce DVC pipeline
+        run: dvc repro
+
+      - name: Prepare CML metrics report
+        run: |
+          echo "## Iris ML experiment results" > report.md
+          echo "" >> report.md
+          echo "Commit: $GITHUB_SHA" >> report.md
+          echo "" >> report.md
+          echo '```json' >> report.md
+          cat reports/metrics.json >> report.md
+          echo '```' >> report.md
+          echo "" >> report.md
+          echo "### Confusion matrix" >> report.md
+          echo "![Confusion matrix](reports/confusion_matrix.png)" >> report.md
+
+      - name: Publish report to pull request
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm install --global @dvcorg/cml
+          cml comment create report.md

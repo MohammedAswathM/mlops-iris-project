@@ -1,0 +1,78 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python src/prepare.py
+    deps:
+    - path: data/raw/iris.csv
+      hash: md5
+      md5: 883be802f028c532ae001065e1048be2
+      size: 4340
+    - path: src/prepare.py
+      hash: md5
+      md5: 423d0921c5002ab3b3dd6db304b3efcc
+      size: 1003
+    params:
+      params.yaml:
+        prepare.random_state: 42
+        prepare.test_size: 0.2
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: 0590f580dc64a8a26a284f0c6c856106.dir
+      size: 3252
+      nfiles: 5
+  train:
+    cmd: python src/train.py
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: 0590f580dc64a8a26a284f0c6c856106.dir
+      size: 3252
+      nfiles: 5
+    - path: src/train.py
+      hash: md5
+      md5: db22a7e1bd3b8784084989e54df18b86
+      size: 763
+    params:
+      params.yaml:
+        train.max_depth: 4
+        train.min_samples_split: 2
+        train.model_type: random_forest
+        train.n_estimators: 100
+        train.random_state: 42
+    outs:
+    - path: models/iris_random_forest.joblib
+      hash: md5
+      md5: 1fa3254f1fb3e8584e192a581e85c619
+      size: 150097
+  evaluate:
+    cmd: python src/evaluate.py
+    deps:
+    - path: data/processed/X_test.csv
+      hash: md5
+      md5: 4907617f4efb038041ff011203d2800b
+      size: 581
+    - path: data/processed/y_test.csv
+      hash: md5
+      md5: 5d927a854a9814f4331db1fc9f367aff
+      size: 98
+    - path: models/iris_random_forest.joblib
+      hash: md5
+      md5: 1fa3254f1fb3e8584e192a581e85c619
+      size: 150097
+    - path: src/evaluate.py
+      hash: md5
+      md5: cdf6950c19dc61d454248680672a142b
+      size: 1595
+    params:
+      params.yaml:
+        evaluate.average: weighted
+    outs:
+    - path: reports/confusion_matrix.png
+      hash: md5
+      md5: a77b635a156d6b5bc836b398d6a9e75a
+      size: 29449
+    - path: reports/metrics.json
+      hash: md5
+      md5: cd26a661a71f7071c61a8bdc604cd15c
+      size: 163
